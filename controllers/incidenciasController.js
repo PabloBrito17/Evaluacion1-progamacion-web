@@ -8,6 +8,7 @@ const {
 
 // Arreglo donde se guardan las incidencias
 const incidencias = [];
+let siguienteId = 1;
 
 // PUNTO 2: Registrar incidencia
 const registrarIncidencia = (req, res) => {
@@ -41,22 +42,24 @@ const registrarIncidencia = (req, res) => {
         });
     }
 
-    const nuevaIncidencia = {
-        id: incidencias.length + 1,
-        empleado: empleado.trim(),
-        area: area.trim(),
-        descripcion: descripcion.trim(),
-        prioridad: prioridadNormalizada.charAt(0).toUpperCase()
-            + prioridadNormalizada.slice(1),
-        estado: "Pendiente"
-    };
+const nuevaIncidencia = {
+    id: siguienteId,
+    empleado: empleado.trim(),
+    area: area.trim(),
+    descripcion: descripcion.trim(),
+    prioridad: prioridadNormalizada.charAt(0).toUpperCase()
+        + prioridadNormalizada.slice(1),
+    estado: "Pendiente"
+};
 
-    incidencias.push(nuevaIncidencia);
+incidencias.push(nuevaIncidencia);
+siguienteId++;
 
-    return res.status(201).json({
-        mensaje: "Incidencia registrada correctamente",
-        incidencia: nuevaIncidencia
-    });
+return res.status(201).json({
+    mensaje: "Incidencia registrada correctamente",
+    incidencia: nuevaIncidencia
+});
+
 };
 
 // PUNTO 3: Listar incidencias
