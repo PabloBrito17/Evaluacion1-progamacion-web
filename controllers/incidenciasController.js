@@ -1,69 +1,62 @@
-//registrar incidencia: controller
-
-
-// arreglo para guardar las incidencias
+// Arreglo en memoria donde se guardan las incidencias.
 const incidencias = [];
 
-
-/*q hacer:
- Recibir datos
- Falta algún campo
-Hay cadenas vacías
-Prioridad es Alta, Media o Baja?
-Crear incidencia
- Guardar
-Responder
-*/
-
 const registrarIncidencia = (req, res) => {
-    //defino los campos que espero recibir
     const { empleado, area, descripcion, prioridad } = req.body;
 
-    //verifico que no falte ningún campo
     if (!empleado || !area || !descripcion || !prioridad) {
-            return res.status(400).json({
-            mensaje: "todos los campos son obligatorios"
-        });
-}
-
-    //ver q no hay cadenas vacías 
-        if (empleado.trim() === "" || 
-        area.trim() === "" || 
-        descripcion.trim() === "" || 
-        prioridad.trim() === "") {
-        return res.status(400).json({
-            mensaje: "ningún campo puede estar vacío"
-    });
-}
-
-    // Verifico q la prioridad sea válida
-    if (
-        prioridad !== "Alta" &&
-        prioridad !== "Media" &&
-        prioridad !== "Baja"
-    ) {
-        return res.status(400).json({
-            mensaje: "La prioridad debe ser Alta, Media o Baja"
-        });
+        return res.status(400).json({ mensaje: "Todos los campos son obligatorios" });
     }
 
-    // Crear la nueva incidencia
+    if (empleado.trim() === "" || area.trim() === "" || descripcion.trim() === "" || prioridad.trim() === "") {
+        return res.status(400).json({ mensaje: "Ningún campo puede estar vacío" });
+    }
+
+    const prioridadNormalizada = prioridad.trim().toLowerCase();
+    const prioridadesValidas = ["alta", "media", "baja"];
+
+    if (!prioridadesValidas.includes(prioridadNormalizada)) {
+        return res.status(400).json({ mensaje: "La prioridad debe ser Alta, Media o Baja" });
+    }
+
     const nuevaIncidencia = {
-    id: incidencias.length + 1,
-    empleado: empleado,
-    area: area,
-    descripcion: descripcion,
-    prioridad: prioridad,
-    estado: "Pendiente"
+        id: incidencias.length + 1,
+        empleado: empleado.trim(),
+        area: area.trim(),
+        descripcion: descripcion.trim(),
+        prioridad: prioridadNormalizada.charAt(0).toUpperCase() + prioridadNormalizada.slice(1),
+        estado: "Pendiente"
+    };
+
+    incidencias.push(nuevaIncidencia);
+    return res.status(201).json({ mensaje: "Incidencia registrada correctamente", incidencia: nuevaIncidencia });
 };
 
-//guardar la incidencia en el array con push
-incidencias.push(nuevaIncidencia);
+// Punto 7: los resultados se calculan dinámicamente desde el arreglo.
+const obtenerEstadisticas = (req, res) => {
+    const estados = ["pendientes", "enProceso", "resueltas", "canceladas"];
+    const estadisticasIniciales = estados.reduce(
+        (acumulado, estado) => ({ ...acumulado, [estado]: 0 }),
+        { totalIncidencias: 0 }
+    );
 
-//Responder con la incidencia creada
-return res.status(201).json({
-    mensaje: "Incidencia registrada correctamente",
-    incidencia: nuevaIncidencia
-});
+    const estadisticas = incidencias.reduce((acumulado, incidencia) => {
+        const estadoNormalizado = incidencia.estado.trim().toLowerCase();
+        const claveEstado = {
+            pendiente: "pendientes",
+            "en proceso": "enProceso",
+            resuelta: "resueltas",
+            cancelada: "canceladas"
+        }[estadoNormalizado];
 
+        return {
+            ...acumulado,
+            totalIncidencias: acumulado.totalIncidencias + 1,
+            ...(claveEstado && { [claveEstado]: acumulado[claveEstado] + 1 })
+        };
+    }, estadisticasIniciales);
+
+    return res.status(200).json(estadisticas);
 };
+
+module.exports = { registrarIncidencia, obtenerEstadisticas };
