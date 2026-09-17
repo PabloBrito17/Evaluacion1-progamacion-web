@@ -59,4 +59,31 @@ const obtenerEstadisticas = (req, res) => {
     return res.status(200).json(estadisticas);
 };
 
-module.exports = { registrarIncidencia, obtenerEstadisticas };
+// Punto 8: la clasificación se resuelve exclusivamente con switch.
+const obtenerClasificacion = (req, res) => {
+    const id = Number(req.params.id);
+    const incidencia = incidencias.find((item) => item.id === id);
+
+    if (!incidencia) {
+        return res.status(404).json({ mensaje: "Incidencia no encontrada" });
+    }
+
+    let clasificacion;
+    switch (incidencia.prioridad) {
+        case "Alta":
+            clasificacion = "Crítica";
+            break;
+        case "Media":
+            clasificacion = "Importante";
+            break;
+        case "Baja":
+            clasificacion = "Normal";
+            break;
+        default:
+            return res.status(400).json({ mensaje: "La incidencia tiene una prioridad inválida" });
+    }
+
+    return res.status(200).json({ id: incidencia.id, clasificacion });
+};
+
+module.exports = { registrarIncidencia, obtenerEstadisticas, obtenerClasificacion };
