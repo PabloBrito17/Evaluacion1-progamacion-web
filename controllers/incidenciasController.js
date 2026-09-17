@@ -6,25 +6,20 @@ const {
     buscarIndiceIncidencia,
 } = require("../utils/helpers");
 
-
-// Arreglo en memoria donde se guardan TODAS las incidencias
+// Arreglo donde se guardan las incidencias
 const incidencias = [];
 
-
-// PUNTO 2: REGISTRAR INCIDENCIA
-
+// PUNTO 2: Registrar incidencia
 const registrarIncidencia = (req, res) => {
 
     const { empleado, area, descripcion, prioridad } = req.body;
 
-    // Verificar que no falte ningún campo
     if (!empleado || !area || !descripcion || !prioridad) {
         return res.status(400).json({
             mensaje: "Todos los campos son obligatorios"
         });
     }
 
-    // Verificar que no haya cadenas vacías
     if (
         empleado.trim() === "" ||
         area.trim() === "" ||
@@ -36,28 +31,26 @@ const registrarIncidencia = (req, res) => {
         });
     }
 
-    // Verificar que la prioridad sea válida
-    if (
-        prioridad !== "Alta" &&
-        prioridad !== "Media" &&
-        prioridad !== "Baja"
-    ) {
+    const prioridadNormalizada = prioridad.trim().toLowerCase();
+
+    const prioridadesValidas = ["alta", "media", "baja"];
+
+    if (!prioridadesValidas.includes(prioridadNormalizada)) {
         return res.status(400).json({
             mensaje: "La prioridad debe ser Alta, Media o Baja"
         });
     }
 
-    // Crear nueva incidencia
     const nuevaIncidencia = {
         id: incidencias.length + 1,
-        empleado: empleado,
-        area: area,
-        descripcion: descripcion,
-        prioridad: prioridad,
+        empleado: empleado.trim(),
+        area: area.trim(),
+        descripcion: descripcion.trim(),
+        prioridad: prioridadNormalizada.charAt(0).toUpperCase()
+            + prioridadNormalizada.slice(1),
         estado: "Pendiente"
     };
 
-    // Guardar en el arreglo
     incidencias.push(nuevaIncidencia);
 
     return res.status(201).json({
@@ -66,19 +59,12 @@ const registrarIncidencia = (req, res) => {
     });
 };
 
-
-// ================================
-// PUNTO 3: LISTAR INCIDENCIAS
-// ================================
-
+// PUNTO 3: Listar incidencias
 const listarIncidencias = (req, res) => {
     return res.status(200).json(incidencias);
 };
 
-
-
-// PUNTO 4: BUSCAR POR ID
-
+// PUNTO 4: Buscar incidencia por ID
 const buscarIncidenciaPorId = (req, res) => {
 
     const id = parseInt(req.params.id);
@@ -96,10 +82,7 @@ const buscarIncidenciaPorId = (req, res) => {
     return res.status(200).json(incidencia);
 };
 
-
-// PUNTO 5: CAMBIAR ESTADO
-
-
+// PUNTO 5: Cambiar estado
 const cambiarEstado = (req, res) => {
 
     const incidencia = buscarIncidencia(
@@ -130,8 +113,7 @@ const cambiarEstado = (req, res) => {
     });
 };
 
-// PUNTO 6: ELIMINAR INCIDENCIA
-
+// PUNTO 6: Eliminar incidencia
 const eliminarIncidencia = (req, res) => {
 
     const indice = buscarIndiceIncidencia(
@@ -153,12 +135,44 @@ const eliminarIncidencia = (req, res) => {
     });
 };
 
+// PUNTO 7: Estadísticas
+const obtenerEstadisticas = (req, res) => {
 
-// Exportamos todas las funciones del controlador
+    const estadisticas = incidencias.reduce((acumulador, incidencia) => {
+
+        acumulador.totalIncidencias++;
+
+        if (incidencia.estado === "Pendiente") {
+            acumulador.pendientes++;
+        }
+        else if (incidencia.estado === "En Proceso") {
+            acumulador.enProceso++;
+        }
+        else if (incidencia.estado === "Resuelta") {
+            acumulador.resueltas++;
+        }
+        else if (incidencia.estado === "Cancelada") {
+            acumulador.canceladas++;
+        }
+
+        return acumulador;
+
+    }, {
+        totalIncidencias: 0,
+        pendientes: 0,
+        enProceso: 0,
+        resueltas: 0,
+        canceladas: 0
+    });
+
+    return res.status(200).json(estadisticas);
+};
+
 module.exports = {
     registrarIncidencia,
     listarIncidencias,
     buscarIncidenciaPorId,
     cambiarEstado,
-    eliminarIncidencia
+    eliminarIncidencia,
+    obtenerEstadisticas
 };
