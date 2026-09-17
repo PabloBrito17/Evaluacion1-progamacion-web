@@ -34,29 +34,38 @@ const registrarIncidencia = (req, res) => {
 
 // Punto 7: los resultados se calculan dinámicamente desde el arreglo.
 const obtenerEstadisticas = (req, res) => {
-    const estados = ["pendientes", "enProceso", "resueltas", "canceladas"];
-    const estadisticasIniciales = estados.reduce(
-        (acumulado, estado) => ({ ...acumulado, [estado]: 0 }),
-        { totalIncidencias: 0 }
-    );
 
-    const estadisticas = incidencias.reduce((acumulado, incidencia) => {
-        const estadoNormalizado = incidencia.estado.trim().toLowerCase();
-        const claveEstado = {
-            pendiente: "pendientes",
-            "en proceso": "enProceso",
-            resuelta: "resueltas",
-            cancelada: "canceladas"
-        }[estadoNormalizado];
+    const estadisticas = incidencias.reduce((acumulador, incidencia) => {
 
-        return {
-            ...acumulado,
-            totalIncidencias: acumulado.totalIncidencias + 1,
-            ...(claveEstado && { [claveEstado]: acumulado[claveEstado] + 1 })
-        };
-    }, estadisticasIniciales);
+        acumulador.totalIncidencias++;
+
+        if (incidencia.estado === "Pendiente") {
+            acumulador.pendientes++;
+        } 
+        else if (incidencia.estado === "En Proceso") {
+            acumulador.enProceso++;
+        } 
+        else if (incidencia.estado === "Resuelta") {
+            acumulador.resueltas++;
+        } 
+        else if (incidencia.estado === "Cancelada") {
+            acumulador.canceladas++;
+        }
+
+        return acumulador;
+
+    }, {
+        totalIncidencias: 0,
+        pendientes: 0,
+        enProceso: 0,
+        resueltas: 0,
+        canceladas: 0
+    });
 
     return res.status(200).json(estadisticas);
 };
 
-module.exports = { registrarIncidencia, obtenerEstadisticas };
+module.exports = {
+    registrarIncidencia,
+    obtenerEstadisticas
+};
