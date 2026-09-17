@@ -168,11 +168,55 @@ const obtenerEstadisticas = (req, res) => {
     return res.status(200).json(estadisticas);
 };
 
+// PUNTO 8: Clasificación automática
+const obtenerClasificacion = (req, res) => {
+
+    const id = Number(req.params.id);
+
+    const incidencia = incidencias.find(
+        item => item.id === id
+    );
+
+    if (!incidencia) {
+        return res.status(404).json({
+            mensaje: "Incidencia no encontrada"
+        });
+    }
+
+    let clasificacion;
+
+    switch (incidencia.prioridad) {
+
+        case "Alta":
+            clasificacion = "Crítica";
+            break;
+
+        case "Media":
+            clasificacion = "Importante";
+            break;
+
+        case "Baja":
+            clasificacion = "Normal";
+            break;
+
+        default:
+            return res.status(400).json({
+                mensaje: "La incidencia tiene una prioridad inválida"
+            });
+    }
+
+    return res.status(200).json({
+        id: incidencia.id,
+        clasificacion: clasificacion
+    });
+};
+
 module.exports = {
     registrarIncidencia,
     listarIncidencias,
     buscarIncidenciaPorId,
     cambiarEstado,
     eliminarIncidencia,
-    obtenerEstadisticas
+    obtenerEstadisticas,
+    obtenerClasificacion
 };

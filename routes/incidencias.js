@@ -6,7 +6,8 @@ const {
     buscarIncidenciaPorId,
     cambiarEstado,
     eliminarIncidencia,
-    obtenerEstadisticas
+    obtenerEstadisticas,
+    obtenerClasificacion
 } = require("../controllers/incidenciasController");
 
 const router = express.Router();
@@ -19,6 +20,9 @@ router.get("/", listarIncidencias);
 
 // Punto 7: Estadísticas
 router.get("/estadisticas", obtenerEstadisticas);
+
+// Punto 8: Clasificación automática
+router.get("/:id/clasificacion", obtenerClasificacion);
 
 // Punto 4: Buscar incidencia por ID
 router.get("/:id", buscarIncidenciaPorId);
