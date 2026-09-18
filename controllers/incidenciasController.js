@@ -99,7 +99,7 @@ const cambiarEstado = (req, res) => {
         });
     }
 
-    const estadoNuevo = validarEstado(req.body.estado);
+    const estadoNuevo = validarEstado(req.body?.estado);
 
     if (estadoNuevo === null) {
         return res.status(400).json({
