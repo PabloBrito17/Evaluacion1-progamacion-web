@@ -1,7 +1,6 @@
 // Funciones auxiliares para cambiar estado y eliminar
 const {
     ESTADOS_VALIDOS,
-    validarEstado,
     buscarIncidencia,
     buscarIndiceIncidencia,
 } = require("../utils/helpers");
@@ -99,13 +98,35 @@ const cambiarEstado = (req, res) => {
         });
     }
 
-    const estadoNuevo = validarEstado(req.body?.estado);
+    const estado = req.body?.estado;
 
-    if (estadoNuevo === null) {
+    if (typeof estado !== "string") {
         return res.status(400).json({
             mensaje: "Estado no válido",
             estadosPermitidos: ESTADOS_VALIDOS
         });
+    }
+
+    let estadoNuevo;
+
+    switch (estado.trim().toLowerCase()) {
+        case "pendiente":
+            estadoNuevo = "Pendiente";
+            break;
+        case "en proceso":
+            estadoNuevo = "En Proceso";
+            break;
+        case "resuelta":
+            estadoNuevo = "Resuelta";
+            break;
+        case "cancelada":
+            estadoNuevo = "Cancelada";
+            break;
+        default:
+            return res.status(400).json({
+                mensaje: "Estado no válido",
+                estadosPermitidos: ESTADOS_VALIDOS
+            });
     }
 
     incidencia.estado = estadoNuevo;
